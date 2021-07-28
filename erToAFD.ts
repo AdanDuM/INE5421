@@ -102,11 +102,12 @@ function unionAFDs(a1: AFD, a2: AFD): AFND {
       transitions: {}
     }
     Object.getOwnPropertyNames(a1.states[state].transitions).forEach(symbol => {
-      newStates[`a1_${state}`].transitions[symbol] = [a1.states[state].transitions[symbol]]
-      if (a1.states[state].final)
+      // Copia cada uma das transições
+      newStates[`a1_${state}`].transitions[symbol] = [`a1_${a1.states[state].transitions[symbol]}`]
+    })
+    if (a1.states[state].final)
         // Se o estado atual era final, deve ser incluída uma transição por epsilon
         newStates[`a1_${state}`].transitions[''] = ['F']
-    })
   })
   // Para cada estado de a2, cria um estado correspondente no novo AFND
   Object.getOwnPropertyNames(a2.states).forEach(state => {
@@ -115,18 +116,19 @@ function unionAFDs(a1: AFD, a2: AFD): AFND {
       transitions: {}
     }
     Object.getOwnPropertyNames(a2.states[state].transitions).forEach(symbol => {
-      newStates[`a2_${state}`].transitions[symbol] = [a2.states[state].transitions[symbol]]
-      if (a2.states[state].final)
+      // Copia cada uma das transições
+      newStates[`a2_${state}`].transitions[symbol] = [`a2_${a2.states[state].transitions[symbol]}`]
+    })
+    if (a2.states[state].final)
         // Se o estado atual era final, deve ser incluída uma transição por epsilon
         newStates[`a2_${state}`].transitions[''] = ['F']
-    })
   })
 
   // Faz a uniao dos dois alfabetos
   const alphabet = new Set<string>()
   a1.alphabet.forEach(symbol => alphabet.add(symbol))
   a2.alphabet.forEach(symbol => alphabet.add(symbol))
-
+  
   return {
     alphabet,
     initialState: 'S',
@@ -160,7 +162,7 @@ function set2name(set: Set<string>): string {
   return `{${s.slice(2)}}`
 }
 
-function stateTransitions(statesSet: Set<string>, afnd: AFND, afdStates: AFD['states']) {
+function stateTransitions(statesSet: Set<string>, closures: Map<string, Set<string>>, afnd: AFND, afdStates: AFD['states']) {
   const newStateName = set2name(statesSet)
   if (!!afdStates[newStateName])
     // Caso o estado atual ja exista, nao tem necessidade de
@@ -197,7 +199,11 @@ function stateTransitions(statesSet: Set<string>, afnd: AFND, afdStates: AFD['st
         return
 
       // Adiciona cada uma das transições no conjunto
-      transitsTo.forEach(nextState => nextStates.add(nextState))
+      transitsTo.forEach(nextState => {
+        nextStates.add(nextState)
+        // Adiciona tambem o conjunto epsilon fecho do proximo estado
+        closures.get(nextState).forEach(byEpsilonNextState => nextStates.add(byEpsilonNextState))
+      })
     })
 
     if (nextStates.size == 0)
@@ -206,7 +212,7 @@ function stateTransitions(statesSet: Set<string>, afnd: AFND, afdStates: AFD['st
 
     // Para este simbolo ja temos o estado para o qual transitar, agora
     // chamamos recursivamente essa mesma função para construi-lo
-    stateTransitions(nextStates, afnd, afdStates)
+    stateTransitions(nextStates, closures, afnd, afdStates)
 
     // Finalmente, gera a label
     return { [`${symbol}`]: set2name(nextStates) }
@@ -229,6 +235,6 @@ function determinizeAFND(afnd: AFND): AFD | null {
 
   // Calculate the AFD states
   const afdStates: AFD['states'] = {}
-  stateTransitions(epsilonClosures.get(afnd.initialState) as Set<string>, afnd, afdStates)
+  stateTransitions(epsilonClosures.get(afnd.initialState) as Set<string>, epsilonClosures, afnd, afdStates)
   return createAFD(afnd.alphabet, set2name(epsilonClosures.get(afnd.initialState) as Set<string>), afdStates)
 }
