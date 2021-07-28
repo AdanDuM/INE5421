@@ -222,7 +222,7 @@ function stateTransitions(statesSet: Set<string>, closures: Map<string, Set<stri
   afdStates[newStateName].transitions = newStateTransitions.reduce((prev, curr) => ({ ...prev, ...curr }), {})
 }
 
-function determinizeAFND(afnd: AFND): AFD | null {
+function determinizeAFND(afnd: AFND): AFD {
   if (!afnd || !afnd.states || !afnd.initialState || !afnd.alphabet) return null
 
   // Calcula o fecho de cada um dos estados
