@@ -19,31 +19,6 @@ const doubleExprOperatorSymbols: { [k: string]: DoubleExprOperator['type'] } = {
 }
 const operatorSymbols = { ...singleExprOperatorSymbols, ...doubleExprOperatorSymbols }
 
-function regex2syntaxTree(str: string): SyntaxTreeNode | string {
-  if (!str)
-    // String vazia
-    return '#'
-  if (str.length === 1) {
-    if (!!operatorSymbols[str])
-      // A string nao pode ser composta so de operadores
-      throw new Error('Regular Expressions cannot be composed of operators only')
-
-    return {
-      type: 'concat',
-      left: str,
-      right: '#'
-    }
-  }
-
-  const firstNode: SyntaxTreeNode = {
-    type: 'concat',
-    right: '#'
-  }
-  for (let i = str.length - 1; i >= 0; i--) {
-    const char = str.charAt(i)
-  }
-}
-
 function buildSyntaxTree(expression: string): SingleExprOperator['value'] {
   // Se a string estiver vazia, erro
   if (!expression)
