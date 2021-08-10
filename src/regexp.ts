@@ -1,8 +1,8 @@
-type SingleExprOperator = {
+export type SingleExprOperator = {
   type: 'star' | 'plus' | 'optional'
   value: DoubleExprOperator | SingleExprOperator | string
 }
-type DoubleExprOperator = {
+export type DoubleExprOperator = {
   type: 'concat' | 'or'
   left: DoubleExprOperator | SingleExprOperator | string
   right: DoubleExprOperator | SingleExprOperator | string
@@ -19,7 +19,7 @@ const doubleExprOperatorSymbols: { [k: string]: DoubleExprOperator['type'] } = {
 }
 const operatorSymbols = { ...singleExprOperatorSymbols, ...doubleExprOperatorSymbols }
 
-function buildSyntaxTree(expression: string): SingleExprOperator['value'] {
+export function buildSyntaxTree(expression: string): SingleExprOperator['value'] {
   // Se a string estiver vazia, erro
   if (!expression)
     throw new Error('Empty expression')
