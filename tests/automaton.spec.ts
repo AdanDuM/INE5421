@@ -11,7 +11,6 @@ import {
   concat,
   kleeneStar,
   kleenePlus,
-  createSyntaxTree,
 } from '../src/Automaton';
 
 describe('Lexical Analysis', () => {
@@ -163,11 +162,6 @@ describe('Lexical Analysis', () => {
     expect(alphabet).toEqual(new Set(['&', 'a']));
     expect(transitions).toHaveLength(3);
     expect(finals).toHaveLength(1);
-  });
-
-  it('should create syntax tree', () => {
-    const syntaxTree = createSyntaxTree('(a|b)*a.b.b.#', null);
-    expect(syntaxTree).toBe(2);
   });
 
   // it('should convert nfa to dfa', () => {

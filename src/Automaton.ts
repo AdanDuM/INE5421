@@ -284,68 +284,6 @@ const kleenePlus = (dfa: Automaton): Automaton => {
 };
 
 /**
- * Convert a regular expression into a DFA
- * @param regex An RegEx.
- * @returns An Automaton.
- */
-const createSyntaxTree = (
-  expression: string,
-  root: SyntaxTreeNode | null,
-): SyntaxTreeNode | SyntaxTreeLeafNode => {
-  if (expression.length === 1) {
-    const subTree: SyntaxTreeLeafNode = {
-      // root,
-      value: expression,
-    };
-
-    return subTree;
-  }
-
-  const last = expression.slice(-1);
-  const antepenultimate = expression.slice(-2, -1);
-  const subExpression = expression.slice(0, -2);
-
-  console.log(
-    'TESTE',
-    'sub',
-    subExpression,
-    'last',
-    last,
-    'antepe',
-    antepenultimate,
-    operatorSymbols[last],
-    operatorSymbols[antepenultimate],
-  );
-  if (operatorSymbols[last]) {
-    const subTree: SyntaxTreeNode = {
-      // root,
-      type: operatorSymbols[last],
-      leafs: [],
-    };
-
-    if (subExpression && subExpression.length > 1) {
-      subTree.leafs.push(createSyntaxTree(subExpression, subTree));
-    }
-    subTree.leafs.push(createSyntaxTree(antepenultimate, subTree));
-
-    return subTree;
-  }
-
-  const subTree: SyntaxTreeNode = {
-    // root,
-    type: operatorSymbols[antepenultimate],
-    leafs: [],
-  };
-
-  if (subExpression && subExpression.length > 1) {
-    subTree.leafs.push(createSyntaxTree(subExpression, subTree));
-  }
-  subTree.leafs.push(createSyntaxTree(last, subTree));
-
-  return subTree;
-};
-
-/**
  * Choose operation
  * @param operation An RegEx.
  * @returns An Automaton.
@@ -407,6 +345,5 @@ export {
   concat,
   kleeneStar,
   kleenePlus,
-  createSyntaxTree,
   // regularExpressionToAutomaton,
 };
