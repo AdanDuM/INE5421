@@ -7,6 +7,7 @@ export type DoubleExprOperator = {
   left: DoubleExprOperator | SingleExprOperator | string
   right: DoubleExprOperator | SingleExprOperator | string
 }
+export type SyntaxTree = SingleExprOperator['value']
 
 const singleExprOperatorSymbols: { [k: string]: SingleExprOperator['type'] } = {
   '*': 'star',
@@ -19,7 +20,7 @@ const doubleExprOperatorSymbols: { [k: string]: DoubleExprOperator['type'] } = {
 }
 const operatorSymbols = { ...singleExprOperatorSymbols, ...doubleExprOperatorSymbols }
 
-export function SyntaxTree(expression: string): SingleExprOperator['value'] {
+export function NewSyntaxTree(expression: string): SyntaxTree {
   // Se a string estiver vazia, erro
   if (!expression)
     throw new Error('Empty expression')
@@ -66,8 +67,8 @@ export function SyntaxTree(expression: string): SingleExprOperator['value'] {
         throw new Error('"or" operator without its two symbols/expressions')
 
       return {
-        right: SyntaxTree(rightExpr),
-        left: SyntaxTree(leftExpr),
+        right: NewSyntaxTree(rightExpr),
+        left: NewSyntaxTree(leftExpr),
         type: 'or'
       }
     }
@@ -80,14 +81,14 @@ export function SyntaxTree(expression: string): SingleExprOperator['value'] {
   
   // Caso nao tenha sobrado nada à esquerda, retorna arvore à direita
   if (!left)
-    return SyntaxTree(right)
+    return NewSyntaxTree(right)
 
   // Caso à direita não exista um operador, retorna as arvores da esquerda
   // e direita, concatenadas
   if (!operatorSymbols[right]) 
     return {
-      right: SyntaxTree(right),
-      left: SyntaxTree(left),
+      right: NewSyntaxTree(right),
+      left: NewSyntaxTree(left),
       type: 'concat'
     }
 
@@ -100,7 +101,7 @@ export function SyntaxTree(expression: string): SingleExprOperator['value'] {
   const { left: newLeft, right: operand } = safeSplitExpr(left)
   
   const rightTree = {
-    value: SyntaxTree(operand),
+    value: NewSyntaxTree(operand),
     type: singleExprOperatorSymbols[right],
   }
 
@@ -111,7 +112,7 @@ export function SyntaxTree(expression: string): SingleExprOperator['value'] {
   // Caso ainda exista algo à esquerda, concatena com a direita
   return {
     right: rightTree,
-    left: SyntaxTree(newLeft),
+    left: NewSyntaxTree(newLeft),
     type: 'concat'
   }
 }
