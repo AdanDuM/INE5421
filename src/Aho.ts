@@ -9,7 +9,7 @@ type FollowPos = { symbol: string, followPos: Set<number> }
 
 const END_SYMBOL = '#'
 
-function toAFD(syntaxTree: SyntaxTree): AFD {
+export function SyntaxTreeToAFD(syntaxTree: SyntaxTree): AFD {
   const { followPos, firstPos } = getFollowPos(syntaxTree)
   const alphabet = getAlphabet(followPos)
 
