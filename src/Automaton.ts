@@ -2,6 +2,10 @@ import fs from 'fs';
 import path from 'path';
 import { uuid } from 'uuidv4';
 
+import { NewSyntaxTree } from './SyntaxTree';
+import SyntaxTreeToAFD from './Aho';
+import { AFD, AFND, unionAFDs, determinizeAFND } from './Automata';
+
 type State = string;
 
 interface Transition {
@@ -334,6 +338,47 @@ const chooseOperation = (operation: string) => {
 //   return automaton;
 // };
 
+/**
+ * Convert a regular expression into a DFA
+ * @param regex An RegEx.
+ * @returns An Automaton.
+ */
+const lexer = (code: string) => {
+  // A interface de execução deve permitir a entrada de um texto fonte
+  const lexemas = code.split(/\s+/); // divide o codigo em possiveis lexemas
+  // carregar tabela de tokens com entradas definidas i.e. palavras reservadas e caracteres aceitos - A interface de projeto deve permitir a inclusão de expressões regulares para todos os padrões de tokes;
+  // const tokens = jsonToTokens();
+  const regex = [
+    '(0|1|2|3|4|5|6|7|8|9)+',
+    '(a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z)+',
+    'while',
+    'if',
+  ];
+  // Para cada ER deve ser gerado o AFD corresponde
+  // const dfa = regex.map(expression => regexToAutomaton(expression));
+  const dfas = regex.map(expression =>
+    SyntaxTreeToAFD(NewSyntaxTree(expression)),
+  );
+
+  // Os AFD devem ser unidos
+  const reducer = (accumulator: AFD, currentValue: AFD) =>
+    determinizeAFND(unionAFDs(accumulator, currentValue));
+
+  const nfaFinal = dfas.reduce(reducer); // arrumar
+  // O AFND resultante deve ser determinizado gerando a tabela de análise léxica
+  // const { dfaFinal, table } = toDFA(nfaFinal);
+  // O texto fonte será analisado e deve gerar um arquivo de saída com todos os tokes encontrados.
+  for (lexema in lexemas) {
+    if (runDFA(lexema, dfaFinal)) {
+      // adicionar token a lista de tokens
+      // ver melhor forma de determinar o tipo, visto que os automatos foram unidos
+      // seria a tal da "tabela de análise léxica"
+    }
+  }
+
+  return tokens;
+};
+
 export {
   openFile,
   jsonToAutomaton,
@@ -345,5 +390,6 @@ export {
   concat,
   kleeneStar,
   kleenePlus,
+  lexer,
   // regularExpressionToAutomaton,
 };
