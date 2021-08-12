@@ -1,22 +1,42 @@
 import { isUuid } from 'uuidv4';
 
+import { openCodeFile } from '../src/utils/File';
 import {
   openFile,
   jsonToAutomaton,
   jsonToRegex,
   createSimpleDFA,
   createDFA,
-  toDFA,
+  epsilonClosure,
+  // toDFA,
   merge,
   concat,
   kleeneStar,
   kleenePlus,
+  runDFA,
+  lexer,
 } from '../src/Automaton';
+
+import { NewSyntaxTree } from '../src/SyntaxTree';
+import SyntaxTreeToAFD from '../src/Aho';
+import {
+  AFD,
+  AFND,
+  runAFD,
+  epsilonClosureM,
+  unionAFDs,
+  determinizeAFND,
+} from '../src/Automata';
 
 describe('Lexical Analysis', () => {
   it('should load json file', () => {
     const file = openFile('example');
     expect(file).toBe(`{"test": "some text"}\n`);
+  });
+
+  it('should load code file', () => {
+    const file = openCodeFile('example');
+    expect(file).toBe(`int n = 0;\nbool show = true;\nstring message = '';\n\ndo\n  n = n + 1\nwhile n < 100\n\nif show == true then\n  message = n\n`);
   });
 
   it('should load dfa from json', () => {
@@ -106,6 +126,31 @@ describe('Lexical Analysis', () => {
     expect(finals.map(f => isUuid(f))).toEqual([true]);
   });
 
+  // it('should compute the epsilon closure of a nfa', () => {
+  //   const automatonA = createSimpleDFA('a');
+  //   const automatonB = createSimpleDFA('b');
+
+  //   const nfa = merge(automatonA, automatonB);
+  //   const { states, alphabet, transitions, initial, finals } = nfa;
+  //   const set = new Set<string>();
+  //   epsilonClosure(nfa.initial, nfa, set);
+  //   // expect(set).toBe('');
+  //   expect(nfa).toBe('');
+  //   expect(runDFA('abac', nfa, nfa.initial)).toBe(true);
+  // });
+
+  // it('should compute the epsilon closure M of a nfa', () => {
+  //   const automatonA = createSimpleDFA('a');
+  //   const automatonB = createSimpleDFA('b');
+
+  //   const { states, alphabet, transitions, initial, finals } = merge(
+  //     automatonA,
+  //     automatonB,
+  //   );
+
+  //   expect(runDFA('abac', automatonA, automatonA.initial)).toBe(true);
+  // });
+
   // it('should convert from regular expression to dfa', () => {
   //   expect(1 + 1).toBe(2);
   // });
@@ -165,10 +210,47 @@ describe('Lexical Analysis', () => {
   });
 
   // it('should convert nfa to dfa', () => {
+  //   const regex = [
+  //     '(0|1|2|3|4|5|6|7|8|9)+',
+  //     '(a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z)+',
+  //     'while',
+  //     'if',
+  //   ];
+  //   const nfa1: AFND = SyntaxTreeToAFD(NewSyntaxTree('(0|1|2|3|4|5|6|7|8|9)+'));
+  //   const nfa2 = SyntaxTreeToAFD(
+  //     NewSyntaxTree('(a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z)+'),
+  //   );
+  //   const nfa3 = SyntaxTreeToAFD(NewSyntaxTree('while'));
+  //   const nfa4 = SyntaxTreeToAFD(NewSyntaxTree('if'));
+  //   determinizeAFND(nfa1);
   //   expect(1 + 1).toBe(2);
   // });
 
-  // it('should build symbol table', () => {
-  //   expect(1 + 1).toBe(2);
+  // it('should run a afd', () => {
+  //   const code = 'while';
+  //   const nfa1 = SyntaxTreeToAFD(NewSyntaxTree(code));
+  //   expect(runAFD(code, nfa1.initialState, nfa1.states)).toBe('2');
   // });
+
+  // it('should successfully run a dfa', () => {
+  //   const automaton = jsonToAutomaton('dfa-1');
+  //   expect(runDFA('abac', automaton, automaton.initial)).toBe(true);
+  // });
+
+  // it('should fail to run a dfa', () => {
+  //   const automaton = jsonToAutomaton('dfa-1');
+  //   expect(runDFA('aba', automaton, automaton.initial)).toBe(false);
+  // });
+
+  // it('should build symbol table', () => {
+  //   const code = 'while 15 > 0';
+  //   const tokens = lexer(code);
+  //   expect(tokens).toBe('2');
+  // });
+
+  it('should build symbol table', () => {
+    const code = openCodeFile('example') || '';
+    const tokens = lexer(code);
+    expect(tokens).toBe('2');
+  });
 });

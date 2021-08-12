@@ -1,0 +1,10 @@
+int n = 0;
+bool show = true;
+string message = '';
+
+do
+  n = n + 1
+while n < 100
+
+if show == true then
+  message = n
