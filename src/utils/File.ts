@@ -3,7 +3,7 @@ import path from 'path';
 
 interface RegDef {
   definitions: {
-    expressions: string;
+    [k: string]: string;
   };
 }
 

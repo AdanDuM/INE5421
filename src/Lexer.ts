@@ -11,11 +11,12 @@ import { NewSyntaxTree } from './SyntaxTree';
 const lexer = (code: string) => {
   // A interface de execução deve permitir a entrada de um texto fonte
   const lexemas = code.split(/\s+/); // divide o codigo em possiveis lexemas
-  const regex = Object.keys(jsonToRegDef('regular-definitions').definitions);
+  const { definitions } = jsonToRegDef('regular-definitions');
+  const regex = Object.keys(definitions);
 
   // Para cada ER deve ser gerado o AFD corresponde
   const dfas = regex.map(expression =>
-    SyntaxTreeToAFD(NewSyntaxTree(expression)),
+    SyntaxTreeToAFD(NewSyntaxTree(expression), definitions[expression]),
   );
 
   // Os AFD devem ser unidos
@@ -23,15 +24,19 @@ const lexer = (code: string) => {
     determinizeAFND(unionAFDs(accumulator, currentValue));
 
   // O AFND resultante deve ser determinizado
-  const nfaFinal = dfas.reduce(reducer);
+  const afdFinal = dfas.reduce(reducer);
 
   const tokens = new Map<number, string>();
-  console.log('TESTE', tokens);
   // O texto fonte será analisado e deve gerar um arquivo de saída com todos os tokes encontrados.
   lexemas.forEach((lexema, position) =>
-    runAFD(lexema, nfaFinal.initialState, nfaFinal.states)
-      ? tokens.set(position, '')
-      : '',
+    afdFinal.process(lexema) ? tokens.set(position, '') : '',
+  );
+  console.log(
+    'TESTE',
+    tokens,
+    dfas,
+    dfas[2],
+    runAFD(';', dfas[0].initialState, dfas[0].states),
   );
 
   return tokens;

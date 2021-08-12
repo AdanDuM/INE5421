@@ -130,13 +130,13 @@ function set2name(set: Set<number>): string {
   return `{${s.slice(2)}}`;
 }
 
-export default function SyntaxTreeToAFD(syntaxTree: SyntaxTree): AFD {
+export default function SyntaxTreeToAFD(syntaxTree: SyntaxTree, nomeDoTreco: string): AFD {
   const { followPos, firstPos } = getFollowPos(syntaxTree);
   const alphabet = getAlphabet(followPos);
 
   const initialState = set2name(firstPos);
   const Dstates: AFD['states'] = {
-    [initialState]: { final: false, transitions: {} },
+    [`${nomeDoTreco}_${initialState}`]: { final: false, transitions: {} },
   };
   const unmarkedStates: Set<number>[] = [firstPos];
 
@@ -155,14 +155,14 @@ export default function SyntaxTreeToAFD(syntaxTree: SyntaxTree): AFD {
       });
 
       const Uname = set2name(U);
-      if (!Dstates[Uname]) {
-        Dstates[Uname] = {
+      if (!Dstates[`${nomeDoTreco}_${Uname}`]) {
+        Dstates[`${nomeDoTreco}_${Uname}`] = {
           final: [...U].some(v => followPos[v].symbol === END_SYMBOL),
           transitions: {},
         };
         unmarkedStates.push(U);
       }
-      Dstates[Sname].transitions[a] = Uname;
+      Dstates[`${nomeDoTreco}_${Sname}`].transitions[a] = Uname;
     });
   }
 
