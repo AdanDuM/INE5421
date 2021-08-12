@@ -1,15 +1,15 @@
-type Deterministic = string
-type NonDeterministic = string[]
-type State<T extends string | string[]> = {
+export type Deterministic = string
+export type NonDeterministic = string[]
+export type State<T extends string | string[]> = {
   final: boolean
   transitions: {
     [symbol: string]: T
   }
 }
 
-type AFD = AF<Deterministic>
-type AFND = AF<NonDeterministic>
-type AF<T extends Deterministic | NonDeterministic> = {
+export type AFD = AF<Deterministic>
+export type AFND = AF<NonDeterministic>
+export type AF<T extends Deterministic | NonDeterministic> = {
   alphabet: Set<string>
   initialState: string
   states: {
@@ -18,7 +18,7 @@ type AF<T extends Deterministic | NonDeterministic> = {
   process: (input: string) => string | null
 }
 
-function runAFD(input: string, currentState: string, states: AFD['states']): string | null {
+export function runAFD(input: string, currentState: string, states: AFD['states']): string | null {
   if (!currentState || !states[currentState])
     // Estado atual inválido (morto)
     return null
@@ -38,7 +38,7 @@ function runAFD(input: string, currentState: string, states: AFD['states']): str
   return runAFD(input.slice(1), nextState, states)
 }
 
-function runAFND(input: string, currentState: string, states: AFND['states']): string | null {
+export function runAFND(input: string, currentState: string, states: AFND['states']): string | null {
   if (!currentState || !states[currentState])
     // Estado atual inválido (morto)
     return null
@@ -69,7 +69,7 @@ function runAFND(input: string, currentState: string, states: AFND['states']): s
   return abc2.length > 0 ? abc2[0] : null
 }
 
-function createAFD(alphabet: Set<string>, initialState: string, states: AFD['states']): AFD {
+export function createAFD(alphabet: Set<string>, initialState: string, states: AFD['states']): AFD {
   return {
     alphabet,
     initialState,
@@ -78,7 +78,7 @@ function createAFD(alphabet: Set<string>, initialState: string, states: AFD['sta
   }
 }
 
-function unionAFDs(a1: AFD, a2: AFD): AFND {
+export function unionAFDs(a1: AFD, a2: AFD): AFND {
   const newStates: AFND['states'] = {
     // Cria um estado inicial novo que transita por epsilon para
     // os estados iniciais de a1 e a2 (que deixam de ser iniciais)
@@ -121,8 +121,8 @@ function unionAFDs(a1: AFD, a2: AFD): AFND {
         newStates[`a1_${state}`].transitions[symbol] = [`a1_${a1.states[state].transitions[symbol]}`]
     })
     if (a1.states[state].final)
-        // Se o estado atual era final, deve ser incluída uma transição por epsilon
-        newStates[`a1_${state}`].transitions[''] = ['F']
+      // Se o estado atual era final, deve ser incluída uma transição por epsilon
+      newStates[`a1_${state}`].transitions[''] = ['F']
   })
   // Para cada estado de a2, cria um estado correspondente no novo AFND
   Object.getOwnPropertyNames(a2.states).forEach(state => {
@@ -142,15 +142,15 @@ function unionAFDs(a1: AFD, a2: AFD): AFND {
         newStates[`a2_${state}`].transitions[symbol] = [`a2_${a2.states[state].transitions[symbol]}`]
     })
     if (a2.states[state].final)
-        // Se o estado atual era final, deve ser incluída uma transição por epsilon
-        newStates[`a2_${state}`].transitions[''] = ['F']
+      // Se o estado atual era final, deve ser incluída uma transição por epsilon
+      newStates[`a2_${state}`].transitions[''] = ['F']
   })
 
   // Faz a uniao dos dois alfabetos
   const alphabet = new Set<string>()
   a1.alphabet.forEach(symbol => alphabet.add(symbol))
   a2.alphabet.forEach(symbol => alphabet.add(symbol))
-  
+
   return {
     alphabet,
     initialState: 'S',
@@ -159,7 +159,7 @@ function unionAFDs(a1: AFD, a2: AFD): AFND {
   }
 }
 
-function epsilonClosure(stateName: string, states: AFND['states'], set: Set<string>) {
+export function epsilonClosure(stateName: string, states: AFND['states'], set: Set<string>) {
   set.add(stateName)
   const state = states[stateName]
 
@@ -179,12 +179,12 @@ function epsilonClosure(stateName: string, states: AFND['states'], set: Set<stri
   })
 }
 
-function set2name_2(set: Set<string>): string {
+export function set2name_2(set: Set<string>): string {
   const s = [...set].sort().reduce((prev, curr) => `${prev}, ${curr}`, '')
   return `{${s.slice(2)}}`
 }
 
-function stateTransitions(statesSet: Set<string>, closures: Map<string, Set<string>>, afnd: AFND, afdStates: AFD['states']) {
+export function stateTransitions(statesSet: Set<string>, closures: Map<string, Set<string>>, afnd: AFND, afdStates: AFD['states']) {
   const newStateName = set2name_2(statesSet)
   if (!!afdStates[newStateName])
     // Caso o estado atual ja exista, nao tem necessidade de
@@ -244,7 +244,7 @@ function stateTransitions(statesSet: Set<string>, closures: Map<string, Set<stri
   afdStates[newStateName].transitions = newStateTransitions.reduce((prev, curr) => ({ ...prev, ...curr }), {})
 }
 
-function determinizeAFND(afnd: AFND): AFD {
+export function determinizeAFND(afnd: AFND): AFD {
   if (!afnd || !afnd.states || !afnd.initialState || !afnd.alphabet) return null
 
   // Calcula o fecho de cada um dos estados

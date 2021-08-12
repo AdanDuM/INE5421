@@ -1,4 +1,4 @@
-import SyntaxTreeToAFD from './Aho';
+import { SyntaxTreeToAFD } from './Aho';
 import { AFD, determinizeAFND, runAFD, unionAFDs } from './Automata';
 import { NewSyntaxTree } from './SyntaxTree';
 import { jsonToRegDef } from './utils/File';
@@ -11,7 +11,7 @@ import { jsonToRegDef } from './utils/File';
 const lexer = (code: string) => {
   // A interface de execução deve permitir a entrada de um texto fonte
   const lexemas = code.split(/\s+/); // divide o codigo em possiveis lexemas
-  const { definitions } = jsonToRegDef('regular-definitions');
+  const { definitions } = jsonToRegDef('regular-definitions2');
   const regex = Object.keys(definitions);
 
   // Para cada ER deve ser gerado o AFD corresponde
@@ -31,9 +31,11 @@ const lexer = (code: string) => {
   lexemas.forEach((lexema, position) => {
     const abc = afdFinal.process(lexema) as string // {F, a1_treeA_{1, 2}}
     if (!!abc) {
-      const nomesDeTrecos = Object.values(definitions).filter(nomeDoTreco => abc.search(nomeDoTreco) !== -1)
-      if (nomesDeTrecos.length > 1)
+      const nomesDeTrecos = [...(new Set(Object.values(definitions).filter(nomeDoTreco => abc.search(nomeDoTreco) !== -1)))]
+      if (nomesDeTrecos.length > 1) {
+        console.log('NOMES DE TRECOS', nomesDeTrecos, lexema, abc);
         throw new Error(`Ambiguidade com ${nomesDeTrecos[0]} e ${nomesDeTrecos[1]} ...`)
+      }
       tokens.set(position, nomesDeTrecos[0])
     }
   });

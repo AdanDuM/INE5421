@@ -11,15 +11,15 @@ type FollowPos = { symbol: string; followPos: Set<number> };
 
 const END_SYMBOL = '#';
 
-function isSymbol(s: SyntaxTree): s is string {
+export function isSymbol(s: SyntaxTree): s is string {
   return typeof s === 'string';
 }
 
-function isSingleOp(s: SyntaxTree): s is SingleExprOperator {
+export function isSingleOp(s: SyntaxTree): s is SingleExprOperator {
   return typeof s === 'object' && ['optional', 'plus', 'star'].includes(s.type);
 }
 
-function recursiveFollowPos(syntaxTree: SyntaxTree, f: FollowPos[]): AhoInfo {
+export function recursiveFollowPos(syntaxTree: SyntaxTree, f: FollowPos[]): AhoInfo {
   // É simbolo
   if (isSymbol(syntaxTree)) {
     const i = f.length;
@@ -104,7 +104,7 @@ function recursiveFollowPos(syntaxTree: SyntaxTree, f: FollowPos[]): AhoInfo {
   return { nullable, firstPos, lastPos };
 }
 
-function getAlphabet(followPos: FollowPos[]): Set<string> {
+export function getAlphabet(followPos: FollowPos[]): Set<string> {
   return new Set([
     ...Array.from(
       followPos.flatMap(v => (v.symbol !== END_SYMBOL ? v.symbol : [])),
@@ -112,7 +112,7 @@ function getAlphabet(followPos: FollowPos[]): Set<string> {
   ]);
 }
 
-function getFollowPos(syntaxTree: SyntaxTree): {
+export function getFollowPos(syntaxTree: SyntaxTree): {
   followPos: FollowPos[];
   firstPos: Set<number>;
 } {
@@ -121,11 +121,11 @@ function getFollowPos(syntaxTree: SyntaxTree): {
   return { followPos, firstPos };
 }
 
-function set2name(set: Set<number>): string {
+export function set2name(set: Set<number>): string {
   const s = [...set]
     .sort()
     .map(i => i + 1).reduce((prev, curr) => `${prev}, ${curr}`, '');
-  
+
   if (s.length === 0)
     return ""
   return `{${s.slice(2)}}`;
