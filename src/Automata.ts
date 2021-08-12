@@ -15,21 +15,21 @@ type AF<T extends Deterministic | NonDeterministic> = {
   states: {
     [name: string]: State<T>
   }
-  process: (input: string) => boolean
+  process: (input: string) => string | null
 }
 
-function runAFD(input: string, currentState: string, states: AFD['states']): boolean {
+function runAFD(input: string, currentState: string, states: AFD['states']): string | null {
   if (!currentState || !states[currentState])
     // Estado atual inválido (morto)
-    return false
+    return null
   if (input.length === 0)
     // Entrada acabou, verifica estado atual (AFD não possui transição por epsilon)
-    return states[currentState].final
+    return states[currentState].final ? currentState : null
 
   const transitions = states[currentState].transitions
   if (!transitions)
     // Estado atual não possui transições saindo (iria p/ morto)
-    return false
+    return null
 
   // Chama recursivamente com novo estado e novo input (agora sem
   // o simbolo lido nesta iteração)
@@ -38,33 +38,35 @@ function runAFD(input: string, currentState: string, states: AFD['states']): boo
   return runAFD(input.slice(1), nextState, states)
 }
 
-function runAFND(input: string, currentState: string, states: AFND['states']): boolean {
+function runAFND(input: string, currentState: string, states: AFND['states']): string | null {
   if (!currentState || !states[currentState])
     // Estado atual inválido (morto)
-    return false
+    return null
 
   const transitions = states[currentState].transitions
   if (!transitions)
     // Se nao existem transições a partir deste estado, então
     // so é true se a entrada acabou e o estado atual é final
-    return input.length == 0 && states[currentState].final
+    return input.length == 0 && states[currentState].final ? currentState : null
 
   // Se existirem transições por epsilon, itera recursivamente,
   // sem alterar a entrada, ate que alguma retorne true (se retornar)
   const epsilonTransitions = transitions[''] || []
-  if (epsilonTransitions.some(nextState => runAFND(input, nextState, states))) return true
+  const abc = epsilonTransitions.filter(nextState => runAFND(input, nextState, states))
+  if (abc.length > 0) return abc[0]
 
   if (input.length === 0)
     // A entrada acabou e transições por epsilon já foram calculadas,
     // so verifica se o estado atual é final
-    return states[currentState].final
+    return states[currentState].final ? currentState : null
 
   // Usa o simbolo para descobrir o(s) proximo(s) estado(s),
   // chamando recursivamente com o input/estado atualizado,
   // parando no primeiro true (retornando false caso contrário)
   const symbol = input.charAt(0)
   const nextStates = transitions[symbol] || []
-  return nextStates.some(nextState => runAFND(input.slice(1), nextState, states))
+  const abc2 = nextStates.filter(nextState => runAFND(input.slice(1), nextState, states))
+  return abc2.length > 0 ? abc2[0] : null
 }
 
 function createAFD(alphabet: Set<string>, initialState: string, states: AFD['states']): AFD {

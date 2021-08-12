@@ -1,6 +1,6 @@
+import { AFD, createAFD } from './Automata';
 import { SingleExprOperator, SyntaxTree } from './SyntaxTree';
 
-import { createAFD, AFD } from './Automata';
 
 type AhoInfo = {
   nullable: boolean;
@@ -162,9 +162,9 @@ export default function SyntaxTreeToAFD(syntaxTree: SyntaxTree, nomeDoTreco: str
         };
         unmarkedStates.push(U);
       }
-      Dstates[`${nomeDoTreco}_${Sname}`].transitions[a] = Uname;
+      Dstates[`${nomeDoTreco}_${Sname}`].transitions[a] = `${nomeDoTreco}_${Uname}`;
     });
   }
 
-  return createAFD(alphabet, initialState, Dstates);
+  return createAFD(alphabet, `${nomeDoTreco}_${initialState}`, Dstates);
 }

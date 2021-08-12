@@ -1,7 +1,7 @@
 import SyntaxTreeToAFD from './Aho';
 import { AFD, determinizeAFND, runAFD, unionAFDs } from './Automata';
-import { jsonToRegDef } from './utils/File';
 import { NewSyntaxTree } from './SyntaxTree';
+import { jsonToRegDef } from './utils/File';
 
 /**
  * Convert a regular expression into a DFA
@@ -28,9 +28,15 @@ const lexer = (code: string) => {
 
   const tokens = new Map<number, string>();
   // O texto fonte será analisado e deve gerar um arquivo de saída com todos os tokes encontrados.
-  lexemas.forEach((lexema, position) =>
-    afdFinal.process(lexema) ? tokens.set(position, '') : '',
-  );
+  lexemas.forEach((lexema, position) => {
+    const abc = afdFinal.process(lexema) as string // {F, a1_treeA_{1, 2}}
+    if (!!abc) {
+      const nomesDeTrecos = Object.values(definitions).filter(nomeDoTreco => abc.search(nomeDoTreco) !== -1)
+      if (nomesDeTrecos.length > 1)
+        throw new Error(`Ambiguidade com ${nomesDeTrecos[0]} e ${nomesDeTrecos[1]} ...`)
+      tokens.set(position, nomesDeTrecos[0])
+    }
+  });
   console.log(
     'TESTE',
     tokens,
