@@ -124,13 +124,14 @@ function getFollowPos(syntaxTree: SyntaxTree): {
 function set2name(set: Set<number>): string {
   const s = [...set]
     .sort()
-    .map(i => i + 1)
-    .reduce((prev, curr) => `${prev}, ${curr}`, '');
-  // console.log('SET2NOME', 'set', set, 's', s, 'slice', `{${s.slice(2)}}`);
+    .map(i => i + 1).reduce((prev, curr) => `${prev}, ${curr}`, '');
+  
+  if (s.length === 0)
+    return ""
   return `{${s.slice(2)}}`;
 }
 
-export default function SyntaxTreeToAFD(syntaxTree: SyntaxTree, nomeDoTreco: string): AFD {
+export function SyntaxTreeToAFD(syntaxTree: SyntaxTree, nomeDoTreco: string): AFD {
   const { followPos, firstPos } = getFollowPos(syntaxTree);
   const alphabet = getAlphabet(followPos);
 
@@ -142,7 +143,7 @@ export default function SyntaxTreeToAFD(syntaxTree: SyntaxTree, nomeDoTreco: str
 
   while (unmarkedStates.length > 0) {
     const S = unmarkedStates.pop() as Set<number>;
-    const Sname = set2name(S);
+    const Sname = !set2name(S) ? "M" : `${nomeDoTreco}_${set2name(S)}`;
 
     // para cada simbolo do alfabeto
     alphabet.forEach(a => {
@@ -154,15 +155,15 @@ export default function SyntaxTreeToAFD(syntaxTree: SyntaxTree, nomeDoTreco: str
         if (a === p) followPos[pIndex].followPos.forEach(v => U.add(v));
       });
 
-      const Uname = set2name(U);
-      if (!Dstates[`${nomeDoTreco}_${Uname}`]) {
-        Dstates[`${nomeDoTreco}_${Uname}`] = {
+      const Uname = !set2name(U) ? "M" : `${nomeDoTreco}_${set2name(U)}`;
+      if (!Dstates[Uname]) {
+        Dstates[Uname] = {
           final: [...U].some(v => followPos[v].symbol === END_SYMBOL),
           transitions: {},
         };
         unmarkedStates.push(U);
       }
-      Dstates[`${nomeDoTreco}_${Sname}`].transitions[a] = `${nomeDoTreco}_${Uname}`;
+      Dstates[Sname].transitions[a] = Uname;
     });
   }
 

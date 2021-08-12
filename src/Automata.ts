@@ -89,6 +89,12 @@ function unionAFDs(a1: AFD, a2: AFD): AFND {
       }
     },
 
+    // Cria um estado morto
+    M: {
+      final: false,
+      transitions: {},
+    },
+
     // Cria um unico estado final, que vai receber transições por
     // epsilon a partir dos estados finais de a1 e a2 (que deixam de ser finais)
     F: {
@@ -99,13 +105,20 @@ function unionAFDs(a1: AFD, a2: AFD): AFND {
 
   // Para cada estado de a1, cria um estado correspondente no novo AFND
   Object.getOwnPropertyNames(a1.states).forEach(state => {
+    // Ignora o estado morto
+    if (state === "M")
+      return
+
     newStates[`a1_${state}`] = {
       final: false, // nunca finais
       transitions: {}
     }
     Object.getOwnPropertyNames(a1.states[state].transitions).forEach(symbol => {
       // Copia cada uma das transições
-      newStates[`a1_${state}`].transitions[symbol] = [`a1_${a1.states[state].transitions[symbol]}`]
+      if (a1.states[state].transitions[symbol] === "M")
+        newStates[`a1_${state}`].transitions[symbol] = ["M"]
+      else
+        newStates[`a1_${state}`].transitions[symbol] = [`a1_${a1.states[state].transitions[symbol]}`]
     })
     if (a1.states[state].final)
         // Se o estado atual era final, deve ser incluída uma transição por epsilon
@@ -113,13 +126,20 @@ function unionAFDs(a1: AFD, a2: AFD): AFND {
   })
   // Para cada estado de a2, cria um estado correspondente no novo AFND
   Object.getOwnPropertyNames(a2.states).forEach(state => {
+    // Ignora o estado morto
+    if (state === "M")
+      return
+
     newStates[`a2_${state}`] = {
       final: false, // nunca finais
       transitions: {}
     }
     Object.getOwnPropertyNames(a2.states[state].transitions).forEach(symbol => {
       // Copia cada uma das transições
-      newStates[`a2_${state}`].transitions[symbol] = [`a2_${a2.states[state].transitions[symbol]}`]
+      if (a2.states[state].transitions[symbol] === "M")
+        newStates[`a2_${state}`].transitions[symbol] = ["M"]
+      else
+        newStates[`a2_${state}`].transitions[symbol] = [`a2_${a2.states[state].transitions[symbol]}`]
     })
     if (a2.states[state].final)
         // Se o estado atual era final, deve ser incluída uma transição por epsilon
@@ -159,13 +179,13 @@ function epsilonClosure(stateName: string, states: AFND['states'], set: Set<stri
   })
 }
 
-function set2name(set: Set<string>): string {
+function set2name_2(set: Set<string>): string {
   const s = [...set].sort().reduce((prev, curr) => `${prev}, ${curr}`, '')
   return `{${s.slice(2)}}`
 }
 
 function stateTransitions(statesSet: Set<string>, closures: Map<string, Set<string>>, afnd: AFND, afdStates: AFD['states']) {
-  const newStateName = set2name(statesSet)
+  const newStateName = set2name_2(statesSet)
   if (!!afdStates[newStateName])
     // Caso o estado atual ja exista, nao tem necessidade de
     // construir novamente
@@ -217,7 +237,7 @@ function stateTransitions(statesSet: Set<string>, closures: Map<string, Set<stri
     stateTransitions(nextStates, closures, afnd, afdStates)
 
     // Finalmente, gera a label
-    return { [`${symbol}`]: set2name(nextStates) }
+    return { [`${symbol}`]: set2name_2(nextStates) }
   })
 
   // Junta todas as transições em um objeto so com o reduce
@@ -238,5 +258,5 @@ function determinizeAFND(afnd: AFND): AFD {
   // Calculate the AFD states
   const afdStates: AFD['states'] = {}
   stateTransitions(epsilonClosures.get(afnd.initialState) as Set<string>, epsilonClosures, afnd, afdStates)
-  return createAFD(afnd.alphabet, set2name(epsilonClosures.get(afnd.initialState) as Set<string>), afdStates)
+  return createAFD(afnd.alphabet, set2name_2(epsilonClosures.get(afnd.initialState) as Set<string>), afdStates)
 }
