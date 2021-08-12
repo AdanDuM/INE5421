@@ -17,7 +17,7 @@ const lexer = (code: string) => {
   const dfas = regex.map(expression =>
     SyntaxTreeToAFD(NewSyntaxTree(expression)),
   );
-  console.log('TESTE1', lexemas);
+
   // Os AFD devem ser unidos
   const reducer = (accumulator: AFD, currentValue: AFD) =>
     determinizeAFND(unionAFDs(accumulator, currentValue));
@@ -26,7 +26,7 @@ const lexer = (code: string) => {
   const nfaFinal = dfas.reduce(reducer);
 
   const tokens = new Map<number, string>();
-  console.log('TESTE', lexemas);
+  console.log('TESTE', tokens);
   // O texto fonte será analisado e deve gerar um arquivo de saída com todos os tokes encontrados.
   lexemas.forEach((lexema, position) =>
     runAFD(lexema, nfaFinal.initialState, nfaFinal.states)
@@ -36,3 +36,5 @@ const lexer = (code: string) => {
 
   return tokens;
 };
+
+export { lexer };

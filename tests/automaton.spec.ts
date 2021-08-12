@@ -14,7 +14,6 @@ import {
   kleeneStar,
   kleenePlus,
   runDFA,
-  lexer,
 } from '../src/Automaton';
 
 import { NewSyntaxTree } from '../src/SyntaxTree';
@@ -27,6 +26,7 @@ import {
   unionAFDs,
   determinizeAFND,
 } from '../src/Automata';
+import { lexer } from '../src/Lexer';
 
 describe('Lexical Analysis', () => {
   it('should load json file', () => {
@@ -34,10 +34,10 @@ describe('Lexical Analysis', () => {
     expect(file).toBe(`{"test": "some text"}\n`);
   });
 
-  it('should load code file', () => {
-    const file = openCodeFile('example');
-    expect(file).toBe(`int n = 0;\nbool show = true;\nstring message = '';\n\ndo\n  n = n + 1\nwhile n < 100\n\nif show == true then\n  message = n\n`);
-  });
+  // it('should load code file', () => {
+  //   const file = openCodeFile('example');
+  //   expect(file).toBe(`int n = 0;\nbool show = true;\nstring message = '';\n\ndo\n  n = n + 1\nwhile n < 100\n\nif show == true then\n  message = n\n`);
+  // });
 
   it('should load dfa from json', () => {
     const automaton = jsonToAutomaton('dfa-1');

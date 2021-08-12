@@ -1,10 +1,9 @@
-int n = 0;
-bool show = true;
-string message = '';
+int n = 0
+bool show = true
 
 do
   n = n + 1
 while n < 100
 
 if show == true then
-  message = n
+  n = 75
