@@ -1,53 +1,41 @@
 import { SyntaxTreeToAFD } from './Aho';
-import { AFD, determinizeAFND, runAFD, unionAFDs } from './Automata';
+import { determinizeAFND, unionAFDs } from './Automata';
 import { NewSyntaxTree } from './SyntaxTree';
-import { jsonToRegDef } from './utils/File';
 
-/**
- * Convert a regular expression into a DFA
- * @param regex An RegEx.
- * @returns An Automaton.
- */
-const lexer = (code: string) => {
-  // A interface de execução deve permitir a entrada de um texto fonte
-  const lexemas = code.split(/\s+/); // divide o codigo em possiveis lexemas
-  const { definitions } = jsonToRegDef('regular-definitions2');
-  const regex = Object.keys(definitions);
+type RegDef = {
+  [k: string]: string
+}
 
-  // Para cada ER deve ser gerado o AFD corresponde
-  const dfas = regex.map(expression =>
-    SyntaxTreeToAFD(NewSyntaxTree(expression), definitions[expression]),
-  );
+export function ReadTokens(code: string, regexps: RegDef): Map<number, string> {
+  const lexemas = code.split(/\s+/)
+  const regex = Object.keys(regexps)
 
-  // Os AFD devem ser unidos
-  const reducer = (accumulator: AFD, currentValue: AFD) =>
-    determinizeAFND(unionAFDs(accumulator, currentValue));
+  // Para cada ER deve ser gerado o AFD correspondente
+  const AFDs = regex.map(e => SyntaxTreeToAFD(NewSyntaxTree(`(${e})#`), regexps[e]))
 
-  // O AFND resultante deve ser determinizado
-  const afdFinal = dfas.reduce(reducer);
+  // AFDs devem ser unidos
+  const finalAFD = AFDs.reduce((acc, v) => determinizeAFND(unionAFDs(acc, v)))
 
-  const tokens = new Map<number, string>();
-  // O texto fonte será analisado e deve gerar um arquivo de saída com todos os tokes encontrados.
+  // Analisa o tipo de cada lexema
+  const tokens = new Map<number, string>()
   lexemas.forEach((lexema, position) => {
-    const abc = afdFinal.process(lexema) as string // {F, a1_treeA_{1, 2}}
-    if (!!abc) {
-      const nomesDeTrecos = [...(new Set(Object.values(definitions).filter(nomeDoTreco => abc.search(nomeDoTreco) !== -1)))]
-      if (nomesDeTrecos.length > 1) {
-        console.log('NOMES DE TRECOS', nomesDeTrecos, lexema, abc);
-        throw new Error(`Ambiguidade com ${nomesDeTrecos[0]} e ${nomesDeTrecos[1]} ...`)
-      }
-      tokens.set(position, nomesDeTrecos[0])
-    }
-  });
-  console.log(
-    'TESTE',
-    tokens,
-    dfas,
-    dfas[2],
-    runAFD(';', dfas[0].initialState, dfas[0].states),
-  );
+    // Roda o AFD e ve qual foi o estado final (set tiver)
+    const finalState = finalAFD.process(lexema)
+    if (!finalState)
+      throw new Error(`Not recognized: ${lexema}`) // Se nao tem estado final, não reconheceu
 
-  return tokens;
-};
+    const regexpNames = [
+      ...(new Set(Object
+        .values(regexps)
+        .filter(nomeDoTreco => finalState.search(nomeDoTreco) !== -1)))
+    ]
+    if (regexpNames.length == 0)
+      throw new Error(`Not recognized: ${lexema}`)
+    if (regexpNames.length > 1)
+      throw new Error(`Ambiguidade com '${regexpNames[0]}' e '${regexpNames[1]}'`)
+    
+    tokens.set(position, regexpNames[0])
+  })
 
-export { lexer };
+  return tokens
+}
