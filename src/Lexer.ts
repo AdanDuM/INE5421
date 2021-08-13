@@ -4,7 +4,7 @@ import { NewSyntaxTree } from './SyntaxTree';
 
 type RegDefs = { regexp: string, name: string, priority: number }[]
 
-export function ReadTokens(code: string, regexps: RegDefs): Map<number, string> {
+export function ReadTokens(code: string, regexps: RegDefs): Map<number, { type: string, value: string }> {
   // Para cada ER deve ser gerado o AFD correspondente
   const AFDs = regexps.map(r => SyntaxTreeToAFD(NewSyntaxTree(`(${r.regexp})#`), `%${r.name}%`))
 
@@ -12,7 +12,7 @@ export function ReadTokens(code: string, regexps: RegDefs): Map<number, string> 
   const finalAFD = AFDs.reduce((acc, v) => determinizeAFND(unionAFDs(acc, v)))
 
   // Analisa o tipo de cada lexema
-  const tokens = new Map<number, string>()
+  const tokens = new Map<number, { type: string, value: string }>()
   iterateCode(finalAFD, code, (lexema, s, p) => {
     const filtered = regexps.filter(r => s.search(`%${r.name}%`) !== -1)
     let names: RegDefs = []
@@ -37,7 +37,7 @@ export function ReadTokens(code: string, regexps: RegDefs): Map<number, string> 
     if (regexpNames.length > 1)
       throw new Error(`Lexema '${lexema}' ambiguo com '${regexpNames[0].regexp} ${regexpNames[0].name}' e '${regexpNames[1].regexp} ${regexpNames[1].name}'`)
     
-    tokens.set(p, regexpNames[0].name)
+    tokens.set(p, { type: regexpNames[0].name, value: lexema })
   })
 
   return tokens
@@ -66,8 +66,12 @@ function iterateCode(afd: AFD, s: string, fn: (l: string, s: string, p: number) 
       j++
       stop = 
             lookahead === " "
+        || char === "*"
+        || (char === "&" && lookahead !== "&")
         || lookahead === "(" || char === "("
-        || lookahead === "(" || char === "("
+        || lookahead === ")" || char === ")"
+        || lookahead === "[" || char === "["
+        || lookahead === "]" || char === "]"
         || lookahead === "{" || char === "{"
         || lookahead === "}" || char === "}"
         || lookahead === "," || char === ","

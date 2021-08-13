@@ -2,9 +2,9 @@ import fs from 'fs';
 import path from 'path';
 
 interface RegDef {
-  definitions: {
-    [k: string]: string;
-  };
+  definitions: [
+    { regexp: string, name: string, priority: number }
+  ];
 }
 
 const openJsonFile = (file: string) => {
