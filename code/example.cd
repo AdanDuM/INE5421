@@ -1,9 +1,7 @@
-number n = 0
+number a = 0
 bool show = true
-
 do
-  n = n + 1
-while n < 100
-
-if show == true then
-  n = 75
+  a = a - 1
+while a < 100
+if show then
+  a = 75
