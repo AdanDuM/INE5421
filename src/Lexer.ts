@@ -1,6 +1,7 @@
 import { SyntaxTreeToAFD } from './Aho';
 import { determinizeAFND, unionAFDs } from './Automata';
 import { NewSyntaxTree } from './SyntaxTree';
+import { openCodeFile, jsonToRegDef } from './utils/File';
 
 export type RegDef = {
   [k: string]: string;
@@ -33,5 +34,11 @@ export function ReadTokens(code: string, regexps: RegDef): Map<number, string> {
     tokens.set(position, regexpNames[0]);
   });
 
+  console.log(tokens);
+
   return tokens;
 }
+
+const code = openCodeFile('example') || '';
+const { definitions } = jsonToRegDef('regular-definitions');
+ReadTokens(code, definitions);
