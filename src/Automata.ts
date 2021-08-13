@@ -15,10 +15,34 @@ export type AF<T extends Deterministic | NonDeterministic> = {
   states: {
     [name: string]: State<T>
   }
-  process: (input: string) => string | null
+  process: Runner
 }
 
-export function runAFD(input: string, currentState: string, states: AFD['states']): string | null {
+export type Runner = (input: string) => { again: Runner | null, result: string | null }
+
+function runAFD2(currentState: string, states: AFD['states']): Runner {
+    return (input: string) => {
+        if (!states[currentState])
+            // Estado atual inválido (morto)
+            return { again: null, result: null }
+        
+        const result = states[currentState].final ? currentState : null
+        if (input.length === 0)
+            return { again: null, result }
+        const transitions = states[currentState].transitions
+        if (!transitions)
+            // Estado atual não possui transições saindo (iria p/ morto)
+            return { again: null, result }
+
+        // Chama recursivamente com novo estado e novo input (agora sem
+        // o simbolo lido nesta iteração)
+        const symbol = input.charAt(0)
+        const nextState = transitions[symbol]
+        return { again: runAFD2(nextState, states), result }
+    }
+}
+
+function runAFD(input: string, currentState: string, states: AFD['states']): string | null {
   if (!currentState || !states[currentState])
     // Estado atual inválido (morto)
     return null
@@ -74,7 +98,7 @@ export function createAFD(alphabet: Set<string>, initialState: string, states: A
     alphabet,
     initialState,
     states,
-    process: input => runAFD(input, initialState, states)
+    process: runAFD2(initialState, states)
   }
 }
 
@@ -155,7 +179,7 @@ export function unionAFDs(a1: AFD, a2: AFD): AFND {
     alphabet,
     initialState: 'S',
     states: newStates,
-    process: input => runAFND(input, 'S', newStates)
+    process: null,
   }
 }
 

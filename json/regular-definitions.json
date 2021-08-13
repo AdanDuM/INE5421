@@ -1,19 +1,19 @@
 {
   "definitions": {
-    "(return)#": "return",
-    "(true)#": "reserved_word",
-    "(false)#": "reserved_word",
-    "(number)#": "type",
-    "(string)#": "type",
-    "(bool)#": "type",
-    "(null)#": "type",
-    "(while)#": "while",
-    "(if)#": "if",
-    "(then)#": "then",
-    "(else)#": "else",
-    "(do)#": "do",
-    "((a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z)+)#": "letter",
-    "((A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z)+)#": "letter",
-    "((0|1|2|3|4|5|6|7|8|9)+)#": "digit"
+    "return": { "name": "return", "priority": 0 },
+    "true": { "name": "reserved_word", "priority": 0 },
+    "false": { "name": "reserved_word", "priority": 0 },
+    "number": { "name": "type", "priority": 0 },
+    "string": { "name": "type", "priority": 0 },
+    "bool": { "name": "type", "priority": 0 },
+    "null": { "name": "type", "priority": 0 },
+    "while": { "name": "while", "priority": 0 },
+    "if": { "name": "if", "priority": 0 },
+    "then": { "name": "then", "priority": 0 },
+    "else": { "name": "else", "priority": 0 },
+    "do": { "name": "do", "priority": 0 },
+    "(a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z)+": { "name": "letter", "priority": 1 },
+    "(A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z)+": { "name": "letter", "priority": 1 },
+    "(0|1|2|3|4|5|6|7|8|9)+": { "name": "digit", "priority": 1 }
   }
 }
