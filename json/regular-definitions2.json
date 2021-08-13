@@ -1,7 +1,0 @@
-{
-  "definitions": {
-    "(return)#": "return",
-    "(true)#": "reserved_word",
-    "(false)#": "reserved_word"
-  }
-}

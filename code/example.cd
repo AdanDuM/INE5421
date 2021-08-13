@@ -1,7 +1,0 @@
-number a = 0
-bool show = true
-do
-  a = a - 1
-while a < 100
-if show then
-  a = 75
