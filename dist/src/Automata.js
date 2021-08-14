@@ -1,6 +1,25 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.determinizeAFND = exports.stateTransitions = exports.set2name_2 = exports.epsilonClosure = exports.unionAFDs = exports.createAFD = exports.runAFND = exports.runAFD = void 0;
+exports.determinizeAFND = exports.stateTransitions = exports.set2name_2 = exports.epsilonClosure = exports.unionAFDs = exports.createAFD = exports.runAFND = void 0;
+function runAFD2(currentState, states) {
+    return (input) => {
+        if (!states[currentState])
+            // Estado atual inválido (morto)
+            return { again: null, result: null };
+        const result = states[currentState].final ? currentState : null;
+        if (input.length === 0)
+            return { again: null, result };
+        const transitions = states[currentState].transitions;
+        if (!transitions)
+            // Estado atual não possui transições saindo (iria p/ morto)
+            return { again: null, result };
+        // Chama recursivamente com novo estado e novo input (agora sem
+        // o simbolo lido nesta iteração)
+        const symbol = input.charAt(0);
+        const nextState = transitions[symbol];
+        return { again: runAFD2(nextState, states), result };
+    };
+}
 function runAFD(input, currentState, states) {
     if (!currentState || !states[currentState])
         // Estado atual inválido (morto)
@@ -18,7 +37,6 @@ function runAFD(input, currentState, states) {
     const nextState = transitions[symbol];
     return runAFD(input.slice(1), nextState, states);
 }
-exports.runAFD = runAFD;
 function runAFND(input, currentState, states) {
     if (!currentState || !states[currentState])
         // Estado atual inválido (morto)
@@ -52,7 +70,7 @@ function createAFD(alphabet, initialState, states) {
         alphabet,
         initialState,
         states,
-        process: input => runAFD(input, initialState, states)
+        process: runAFD2(initialState, states)
     };
 }
 exports.createAFD = createAFD;
@@ -126,7 +144,7 @@ function unionAFDs(a1, a2) {
         alphabet,
         initialState: 'S',
         states: newStates,
-        process: input => runAFND(input, 'S', newStates)
+        process: null,
     };
 }
 exports.unionAFDs = unionAFDs;

@@ -18,14 +18,15 @@ function getParentesisStart(expression, closingParentesis) {
     const stack = [')'];
     let i = closingParentesis - 1;
     for (; i >= 0; i--) {
+        let prevChar = (i >= 1) ? expression.charAt(i - 1) : "";
         const currChar = expression.charAt(i);
         // Cada fechamento de parentesis aumenta stack
-        if (currChar === ')') {
+        if (prevChar !== "\\" && currChar === ')') {
             stack.push(')');
             continue;
         }
         // Cada abertura de parentesis diminui a stack
-        if (currChar === '(')
+        if (prevChar !== "\\" && currChar === '(')
             stack.pop();
         // Stack vazia, a expressao dentro do parentesis acabou
         if (stack.length === 0)
@@ -40,12 +41,15 @@ function getParentesisStart(expression, closingParentesis) {
 // considerando parentesis
 function safeSplitExpr(expression) {
     let right = expression.substr(-1);
-    const left = expression.substring(0, expression.length - 1);
+    if (right === "\\")
+        throw new Error('"\\" without the scaped symbol');
+    let left = expression.substring(0, expression.length - 1);
+    const leftLast = left.substr(-1);
     // Não é possível abrir um parentesis e nao fechar
-    if (right === '(')
+    if (leftLast !== "\\" && right === '(')
         throw new Error(`Parentesis without it's closing twin`);
     // Temos um parentesis como primeira expressão à direita e o resto como esquerda
-    if (right === ')') {
+    if (leftLast !== "\\" && right === ')') {
         const parentesisStart = getParentesisStart(expression, expression.length - 1);
         // Caso a parte de dentro do parentesis seja vazia, erro
         right = expression.substring(parentesisStart + 1, expression.length - 1);
@@ -67,14 +71,18 @@ function NewSyntaxTree(expression) {
         // Caso seja um operador, erro (pois falta o simbolo/expressao)
         if (operatorSymbols[expression])
             throw new Error('Operator without symbol/expression');
+        // Caso seja uma contrabarra, erro, pois falta o simbolo escapado
+        if (expression === '\\')
+            throw new Error('"\\" without the scaped symbol');
         // Senao, retorna o simbolo, apenas
         return expression;
     }
     // Procura um "or" no primeiro nivel, que divida a expressao em dois lados
     for (let i = expression.length - 1; i >= 0; i--) {
+        let prevChar = (i >= 1) ? expression.charAt(i - 1) : "";
         let currChar = expression.charAt(i);
         // Pula o interior de qualquer parentesis, considera apenas o nivel mais alto
-        while (currChar === ')') {
+        while (prevChar !== "\\" && currChar === ')') {
             i = getParentesisStart(expression, i) - 1;
             // Se i for negativo, entao não existem "or" à esquerda
             if (i < 0)
@@ -86,11 +94,11 @@ function NewSyntaxTree(expression) {
         if (i < 0)
             break;
         // Não é possível abrir um parentesis e nao fechar
-        if (currChar === '(')
+        if (prevChar !== "\\" && currChar === '(')
             throw new Error(`Parentesis without it's closing twin`);
         // Encontrou um "or", então divide a expressao em duas, ligadas por um nodo
         // "or"
-        if (operatorSymbols[currChar] === 'or') {
+        if (prevChar !== "\\" && operatorSymbols[currChar] === 'or') {
             const rightExpr = expression.substring(i + 1);
             const leftExpr = expression.substring(0, i);
             if (!rightExpr || !leftExpr)
@@ -109,6 +117,8 @@ function NewSyntaxTree(expression) {
     // Caso nao tenha sobrado nada à esquerda, retorna arvore à direita
     if (!left)
         return NewSyntaxTree(right);
+    if (left === "\\")
+        return right;
     // Caso à direita não exista um operador, retorna as arvores da esquerda
     // e direita, concatenadas
     if (!operatorSymbols[right])
@@ -117,11 +127,24 @@ function NewSyntaxTree(expression) {
             left: NewSyntaxTree(left),
             type: 'concat',
         };
+    // Caso o ultimo simbolo da esquerda seja uma contrabarra, entao nao considera
+    // a direita como operador, e sim como simbolo simples
+    const leftLast = left.substr(-1);
+    if (leftLast === "\\") {
+        const newLeft = left.substring(0, left.length - 1);
+        if (!newLeft)
+            return right;
+        return {
+            left: NewSyntaxTree(newLeft),
+            right,
+            type: 'concat',
+        };
+    }
     // Garante que nao vai ter um "or" aqui (loop do inicio deveria pegar)
     // ou um concat
     if (doubleExprOperatorSymbols[right])
         throw new Error(`Illegal '${right}' operator usage`);
-    // Caso seja um operador, divide a esquerda novamente
+    // Caso seja um operador sem contrabarra, divide a esquerda novamente
     const { left: newLeft, right: operand } = safeSplitExpr(left);
     const rightTree = {
         value: NewSyntaxTree(operand),
