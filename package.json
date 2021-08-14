@@ -6,6 +6,6 @@
   "author": "Adan Gomes <adandum@hotmail.com>",
   "license": "MIT",
   "scripts": {
-    "apresentar": "node"
+    "apresentar": "node dist/src/Lexer.js"
   }
 }
