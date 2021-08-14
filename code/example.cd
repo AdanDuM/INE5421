@@ -1,9 +1,10 @@
-number n = 0
-bool show = true
-
-do
-  n = n + 1
-while n < 100
-
-if show == true then
-  n = 75
+function functionName(paramNameA, paramNameB, paramNameC) {
+  var variableName = 10;
+  if (variableName == 50 && (true || variableName <= 6)) {
+    while (condition) {
+        return &someValue && [55.9576];
+    }
+  } else {
+    return false || *somePointer;
+  }
+}

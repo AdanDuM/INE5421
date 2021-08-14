@@ -1,6 +1,7 @@
 import { SyntaxTreeToAFD } from './Aho';
 import { AFD, determinizeAFND, Runner, unionAFDs } from './Automata';
 import { NewSyntaxTree } from './SyntaxTree';
+import { openCodeFile, jsonToRegDef } from './utils/File';
 
 type RegDefs = { regexp: string, name: string, priority: number }[]
 
@@ -36,7 +37,7 @@ export function ReadTokens(code: string, regexps: RegDefs): Map<number, { type: 
       throw new Error(`Not recognized: ${lexema}`)
     if (regexpNames.length > 1)
       throw new Error(`Lexema '${lexema}' ambiguo com '${regexpNames[0].regexp} ${regexpNames[0].name}' e '${regexpNames[1].regexp} ${regexpNames[1].name}'`)
-    
+
     tokens.set(p, { type: regexpNames[0].name, value: lexema })
   })
 
@@ -64,7 +65,7 @@ function iterateCode(afd: AFD, s: string, fn: (l: string, s: string, p: number) 
       }
 
       j++
-      stop = 
+      stop =
             lookahead === " "
         || char === "*"
         || (char === "&" && lookahead !== "&")
@@ -85,3 +86,7 @@ function iterateCode(afd: AFD, s: string, fn: (l: string, s: string, p: number) 
     i = j - 1
   }
 }
+
+const code = openCodeFile('example') || '';
+const { definitions } = jsonToRegDef('regular-definitions');
+ReadTokens(code, definitions);
