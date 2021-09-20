@@ -44,8 +44,8 @@ class Parser {
     return this.grammar.terminals.includes(symbol);
   };
 
-  noEpsilonIn = (set: Set<string>): boolean => {
-    return !set.has('&');
+  noEpsilonIn = (set: Array<string>): boolean => {
+    return !set.includes('&');
   };
 
   getFirstsOf = (symbol: string): Set<string> => {
@@ -60,8 +60,8 @@ class Parser {
     this.firsts.get(this.grammar.startSymbol).add('$');
   };
 
-  findFirtsOf = (grammar: Grammar): Map<string, Set<string>> => {
-    const { nonterminals, terminals, productions } = grammar;
+  findFirtsOfGrammar = (): Map<string, Set<string>> => {
+    const { nonterminals, terminals, productions } = this.grammar;
 
     this.initializeFirstsOfEach(nonterminals);
     this.initializeFirstsOfEachTerminals(terminals);
@@ -81,7 +81,7 @@ class Parser {
               unchangedFirstsAfterLoop = false;
               break;
             } else {
-              const nonterminalFirsts = this.getFirstsOf(symbol);
+              const nonterminalFirsts = Array.from(this.getFirstsOf(symbol));
               nonterminalFirsts.forEach(f =>
                 this.getFirstsOf(nonterminalSymbol).add(f),
               );
@@ -101,13 +101,15 @@ class Parser {
     return this.firsts;
   };
 
-  findFollowsOf = (grammar: Grammar): Map<string, Set<string>> => {
-    const { nonterminals, terminals, productions } = grammar;
+  findFollowsOfGrammar = (): Map<string, Set<string>> => {
+    const { nonterminals, terminals, productions } = this.grammar;
 
     this.initializeFollowsOfEach(nonterminals);
     this.addDollarSignToFollowsOfStartSymbol();
 
-    const productionBodies = Array.from(productions.values()).flat();
+    const productionBodies = Array.from(productions.values())
+      .map(p => [...p])
+      .flat();
     productionBodies.forEach(production => {
       const symbols = production.split('');
 
@@ -117,7 +119,7 @@ class Parser {
         const isNonterminalSymbol = !this.isTerminal(symbol);
 
         if (isNonterminalSymbol) {
-          const nextSymbolFirsts = this.getFirstsOf(nextSymbol);
+          const nextSymbolFirsts = Array.from(this.getFirstsOf(nextSymbol));
           nextSymbolFirsts.forEach(firstElement =>
             this.getFollowsOf(symbol).add(firstElement),
           );

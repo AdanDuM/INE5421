@@ -6,7 +6,7 @@ class Grammar {
 
   terminals: Array<string>;
 
-  productions: Map<string, Set<string>>;
+  productions: Map<string, Set<Array<string>>>;
 
   startSymbol: string;
 
@@ -17,11 +17,11 @@ class Grammar {
     this.startSymbol = startSymbol;
   }
 
-  getProductionsOf? = (symbol: string): Set<string> => {
+  getProductionsOf? = (symbol: string): Set<Array<string>> => {
     return this.productions.get(symbol);
   };
 
-  getProductionsArrayOf? = (nonterminal: string): Array<string> => {
+  getProductionsArrayOf? = (nonterminal: string): Array<Array<string>> => {
     return Array.from(this.getProductionsOf(nonterminal)).slice();
   };
 
@@ -41,16 +41,14 @@ class Grammar {
 
   // hasIndirectNondeterminismInProductionOf = () => {};
 
-  hasDirectNondeterminismIn? = (productions: Array<string>): boolean => {
+  hasDirectNondeterminismIn? = (productions: Array<Array<string>>): boolean => {
     const remainderProductions = productions.slice().sort();
     let production = remainderProductions.shift();
     while (remainderProductions.length) {
-      const alphaSymbol = production.charAt(0);
+      const alphaSymbol = production[0];
       if (this.isTerminal(alphaSymbol)) {
-        // se tem producoes que comecam com o mesmo terminal
-        // hasMoreThanOneProductionStartingWithSameTerminal
         const hasMoreThanOneProductionStartingWithSameTerminal =
-          remainderProductions.find(p => p.charAt(0).includes(alphaSymbol));
+          remainderProductions.find(p => p[0].includes(alphaSymbol));
 
         if (hasMoreThanOneProductionStartingWithSameTerminal) {
           return true;
@@ -79,30 +77,26 @@ class Grammar {
 
   removeDirectNondeterminismOf? = (nonterminal: string): void => {
     const productions = this.getProductionsArrayOf(nonterminal);
-    const alphaSymbol = productions
-      .find(p => this.isTerminal(p.charAt(0)))
-      .charAt(0);
+    const alphaSymbol = productions.find(p => this.isTerminal(p[0]))[0];
 
     const newProductionHead = `${nonterminal}'`;
     let productionWithNondeterminism = productions.filter(p =>
-      p.charAt(0).includes(alphaSymbol),
+      p[0].includes(alphaSymbol),
     );
     const productionWithoutNondeterminism = productions.filter(
-      p => !p.charAt(0).includes(alphaSymbol),
+      p => !p[0].includes(alphaSymbol),
     );
     productionWithNondeterminism = productionWithNondeterminism
       .map(p => p.slice(1))
       .filter(p => p);
 
-    const hasSymbolWithOnlyAlpha = productions.filter(p =>
-      p.includes(alphaSymbol),
-    );
+    const hasSymbolWithOnlyAlpha = productions.filter(p => p === [alphaSymbol]);
 
     if (hasSymbolWithOnlyAlpha) {
-      productionWithNondeterminism.push('&');
+      productionWithNondeterminism.push(['&']);
     }
 
-    const newDeterministicProduction = `${alphaSymbol}${newProductionHead}`;
+    const newDeterministicProduction = [alphaSymbol, newProductionHead];
     this.productions.set(
       nonterminal,
       new Set([newDeterministicProduction, ...productionWithoutNondeterminism]),
@@ -113,9 +107,7 @@ class Grammar {
     );
     this.productions = new Map([...this.productions.entries()].sort());
 
-    const productions1 = Array.from(this.getProductionsOf(newProductionHead))
-      .slice()
-      .sort();
+    const productions1 = this.getProductionsArrayOf(newProductionHead).sort();
 
     if (this.hasDirectNondeterminismIn(productions1)) {
       this.removeDirectNondeterminismOf(newProductionHead);
