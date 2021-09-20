@@ -1,0 +1,11 @@
+{
+  "nonterminal": ["S","A","B","C"],
+  "terminal": ["a", "b", "c"],
+  "productions": {
+    "S": ["ABC"],
+    "A": ["aA","&"],
+    "B": ["bB","ACd"],
+    "C": ["cC","&"]
+  },
+  "start": "S"
+}

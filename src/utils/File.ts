@@ -2,9 +2,7 @@ import fs from 'fs';
 import path from 'path';
 
 interface RegDef {
-  definitions: [
-    { regexp: string, name: string, priority: number }
-  ];
+  definitions: [{ regexp: string; name: string; priority: number }];
 }
 
 const openJsonFile = (file: string) => {
@@ -30,4 +28,9 @@ const jsonToRegDef = (json: string): RegDef => {
   return jsonRegDef ? JSON.parse(jsonRegDef) : '';
 };
 
-export { openJsonFile, openCodeFile, jsonToRegDef };
+const jsonToGrammar = (json: string): RegDef => {
+  const jsonGrammar = openJsonFile(json);
+  return jsonGrammar ? JSON.parse(jsonGrammar) : '';
+};
+
+export { openJsonFile, openCodeFile, jsonToRegDef, jsonToGrammar };
