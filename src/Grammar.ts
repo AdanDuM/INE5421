@@ -1,5 +1,5 @@
 // [ ] Eliminação de recursão à esquerda
-// [x] Fatoração
+// [1/2] Fatoração
 
 class Grammar {
   nonterminals: Array<string>;
@@ -135,25 +135,24 @@ class Grammar {
     }
   };
 
-  // leftFactor = (): Grammar => {
-  //   const nonterminals: Array<string> = [];
-  //   const terminals: Array<string> = [];
-  //   const productions: Map<string, Array<string>> = new Map();
-  //   const startSymbol = '';
+  leftFactor? = (): Grammar => {
+    const nonterminals: Array<string> = [];
+    const terminals: Array<string> = [];
+    const productions: Map<string, Set<Array<string>>> = new Map();
+    const startSymbol = '';
 
-  //   this.removeIndirectNondeterminism();
-  //   this.removeDirectNondeterminism();
-  //   /*
-  //   remove indireto
-  //   remove direto
+    // this.removeIndirectNondeterminism();
+    this.removeDirectNondeterminism();
 
-  //   procura indireto
-  //   se tiver faz novamente mas olha por loop
-  //   caso não tenha retorna
-  //   */
+    const grammar = {
+      nonterminals,
+      terminals,
+      productions,
+      startSymbol,
+    };
 
-  //   return new Grammar(nonterminals, terminals, productions, startSymbol);
-  // };
+    return new Grammar(grammar);
+  };
 }
 
 export default Grammar;
